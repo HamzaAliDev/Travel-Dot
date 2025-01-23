@@ -1,0 +1,27 @@
+.add-todo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.add-todo-card {
+    max-width: 450px;
+    background: transparent;
+    box-shadow: 29px 29px 57px #adb5bd,
+        -29px -29px 57px #ffffff;
+}
+
+.card-heading {
+    color: #023047;
+}
+
+.add-todo-datepicker{
+    width: 100% !important;
+}
+
+.add-todo-btn:hover {
+    color: #000 !important;
+    border-color: #ffc300 !important;
+    background-color: #ffaa00 !important;
+}

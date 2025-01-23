@@ -1,0 +1,48 @@
+.header{
+    font-family: 'Poppins';
+    background: transparent;
+    position: fixed; /* Position navbar on top of background image */
+    width: 100%; /* Ensure it takes up full width */
+    z-index: 10;
+   
+}
+.header.scrolled {
+    background: rgba(61, 60, 60, 0.8); /* Change to your desired background color */
+    /* Add other styles for the scrolled state */
+  }
+.nav-icon{
+    img{
+        width: 40px;
+    }
+}
+.navbar-item{
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: #fff;
+}
+.nav-link:hover{
+    color: #ff9f1c !important;
+}
+.btn-navbar{
+    padding: 4px 15px 4px 15px !important;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 15px;
+}
+.btn-sign-up:hover{
+    background:transparent;
+    color: #ff9f1c;
+}
+
+
+@media (max-width: 767px) {
+    .navbar-collapse {
+        width: 100% !important;
+        background-color: rgba(0, 0, 0, 0.8); /* Add a background color with transparency */
+        position: relative; /* Ensure it's positioned correctly over content */
+        z-index: 20; /* Make sure the navbar content is above other elements */
+    }
+    .navbar-item{
+        margin-left: 10px;
+    }
+}

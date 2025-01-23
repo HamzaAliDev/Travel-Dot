@@ -1,0 +1,29 @@
+@import './scss/bootstrap';
+@import './scss/screenLoader';
+@import './scss/landing';
+@import './scss/auth';
+@import './scss/addTodo';
+@import './scss/navbar';
+@import './scss/home';
+@import './scss/footer';
+@import './scss/destination';
+@import './scss/contact';
+@import './scss/dashboard';
+
+#root{
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.main{
+  flex: 1 0 auto;
+}
+.img-page-blog{
+  height: 300px;
+  width: 100%;
+  img{
+    height: 100%;
+    object-fit: cover;
+    overflow: hidden;
+  }
+}

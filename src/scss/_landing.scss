@@ -1,0 +1,159 @@
+.box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    margin: auto;
+}
+
+.line {
+    position: absolute;
+    width: 100%;
+    overflow: hidden;
+    height: 97%;
+    background: #001d3d;
+}
+
+.mid-text-land-page {
+    font-family: Open Sans;
+    position: absolute;
+    z-index: 99;
+    top: 40%;
+    left: 50%;
+    font-size: 40px;
+    font-weight: 500;
+    color: #ff9e00;
+    transform: translate(-50%, -50%);
+
+}
+
+.start-btn {
+    position: absolute;
+    z-index: 60;
+    top: 53%;
+    left: 50%;
+    font-size: 16px;
+    border-radius: 20px;
+    padding: 6px 20px;
+    transform: translate(-50%, -50%);
+    transition: all 0.5s;
+}
+
+.start-btn span {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.5s;
+}
+
+.start-btn:hover {
+    background-color: #ff9e00;
+}
+
+.start-btn span:after {
+    content: '»';
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    right: -15px;
+    transition: 0.5s;
+}
+
+.start-btn:hover span {
+    padding-right: 15px;
+}
+
+.start-btn:hover span:after {
+    opacity: 1;
+    right: 0;
+}
+
+.line1 {
+    z-index: 15;
+    opacity: 0.5;
+}
+
+.line2 {
+    z-index: 10;
+    opacity: 0.7;
+}
+
+.line3 {
+    z-index: 5;
+}
+
+.wave {
+    position: absolute;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background-repeat: repeat no-repeat;
+    background-position: 0 bottom;
+    transform-origin: center bottom;
+}
+
+.wave1 {
+    -webkit-background-size: 50% 80px;
+    background-size: 50% 80px;
+
+}
+
+.wave2 {
+    -webkit-background-size: 50% 100px;
+    background-size: 50% 100px;
+    animation: animate 12s linear infinite;
+
+}
+
+.wave3 {
+    -webkit-background-size: 50% 80px;
+    background-size: 50% 80px;
+    animation: animate 18s linear infinite;
+
+}
+
+@keyframes animate {
+    0% {
+        transform: translateX(0) translateZ(0) scaleY(1);
+    }
+
+    50% {
+        transform: translateX(-25%) translateZ(0) scaleY(0.5);
+    }
+
+    100% {
+        transform: translateX(-50%) translateZ(0) scaleY(1);
+    }
+}
+
+
+@media (max-width: 950px) {
+    .start-btn {
+        font-size: 18px;
+        /* Adjust font size for smaller screens */
+        top: 58%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+}
+
+@media (max-width: 768px) {
+    .start-btn {
+        font-size: 16px;
+        /* Adjust font size for smaller screens */
+        top: 63%;
+    }
+}
+
+@media (max-width: 480px) {
+    .start-btn {
+        font-size: 14px;
+        /* Adjust font size for very small screens */
+        top: 60%;
+    }
+    .mid-text-land-page{
+        font-size: 30px;
+    }
+}
