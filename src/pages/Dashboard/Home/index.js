@@ -73,7 +73,7 @@ export default function Home() {
 
    
 
-    console.log("users", users)
+    // console.log("users", users)
     const data = users.map((u, i) => {
         return {
             key: i + 1,

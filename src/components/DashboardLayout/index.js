@@ -20,7 +20,7 @@ export default function DashboardLayout() {
     const items = [
         getItem('Users', '1', <TeamOutlined />, () => navigate('/dashboard/')),
         getItem('Destinations', '2', <UnorderedListOutlined />, () => navigate("/dashboard/destination")),
-        getItem('Offers', '3', <TagsOutlined />, () => navigate("/dashboard/offer")),
+        getItem('Bookings', '3', <TagsOutlined />, () => navigate("/dashboard/bookings")),
         getItem('Blogs', '4', <FileTextOutlined />, () => navigate("/dashboard/blog")),
     ];
     return (

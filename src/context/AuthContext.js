@@ -1,4 +1,4 @@
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import React, { createContext, useCallback, useContext, useEffect, useReducer, useState } from 'react'
 import { auth, firestore } from '../config/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -43,8 +43,13 @@ export default function AuthContext({ children }) {
 
     useEffect(() => { readProfile() }, [readProfile])
 
-    const handleLogout = () => {
-        dispatch({ type: 'SET_LOGGED_OUT' });
+    const handleLogout = async() => {
+        try {
+            await signOut(auth); // Sign out from Firebase
+            dispatch({ type: 'SET_LOGGED_OUT' }); // Update local state
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
     }
     console.log(state)
 

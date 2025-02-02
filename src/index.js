@@ -6,13 +6,19 @@ import '../src/config/global';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import AuthContext from './context/AuthContext';
+import DestinationContext from './context/DestinationContext';
+import BlogContext from './context/BlogContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthContext>
-        <App />
+        <DestinationContext>
+          <BlogContext>
+            <App />
+          </BlogContext>
+        </DestinationContext>
       </AuthContext>
     </BrowserRouter>
 
