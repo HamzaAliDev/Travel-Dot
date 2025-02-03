@@ -27,7 +27,7 @@ export default function DestinationContext({ children }) {
         fetchDestinations();
       }, []);
   return (
-    <Destination.Provider value={{ destinations }}>
+    <Destination.Provider value={{ destinations, setDestinations }}>
         {children}
     </Destination.Provider>
   )

@@ -1,21 +1,17 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import DashboardLayout from '../../../components/DashboardLayout';
 import { Layout, theme, Space, Table, Modal, Select } from 'antd';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { firestore, storage } from '../../../config/firebase';
-import { collection, deleteDoc, doc, getDocs, setDoc } from 'firebase/firestore';
-
-
+import { deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { useDestinationContext } from '../../../context/DestinationContext';
 
 const { Content } = Layout;
-
 
 const columns = (handleUpdate, handleDelete) => [
     { title: 'St#', dataIndex: 'num', key: 'num', },
     {
-        title: 'Image',
-        dataIndex: 'img',
-        key: 'img',
+        title: 'Image', dataIndex: 'img', key: 'img',
         render: (url) => (
             <img src={url} alt='pic' className='rounded' style={{ height: 80, width: 80 }} />
         )
@@ -25,9 +21,7 @@ const columns = (handleUpdate, handleDelete) => [
     { title: 'Days', dataIndex: 'days', key: 'days', },
     { title: 'Price', dataIndex: 'price', key: 'price', },
     {
-        title: 'Places',
-        dataIndex: 'places',
-        key: 'places',
+        title: 'Places', dataIndex: 'places', key: 'places',
         render: (places) => (
             <ul>
                 {places.map((place, index) => (
@@ -37,9 +31,7 @@ const columns = (handleUpdate, handleDelete) => [
         ),
     },
     {
-        title: 'Facilities',
-        dataIndex: 'facilities',
-        key: 'facilities',
+        title: 'Facilities', dataIndex: 'facilities', key: 'facilities',
         render: (facilities) => (
             <ul>
                 {facilities.map((facility, index) => (
@@ -61,9 +53,9 @@ const columns = (handleUpdate, handleDelete) => [
 
 const initialState = { title: "", days: "", price: "", places: [], facilities: [] }
 export default function Destination() {
+    const { destinations, setDestinations } = useDestinationContext();
     const [state, setState] = useState(initialState)
     const [file, setFile] = useState(null);
-    const [destinations, setDestinations] = useState([]);
     const [selectedDestination, setSelectedDestination] = useState({})
     const [open, setOpen] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
@@ -73,23 +65,7 @@ export default function Destination() {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
 
-    const readData = useCallback(async () => {
-        const querySnapshot = await getDocs(collection(firestore, "Destinations"));
-        let destinationList = [];
-        querySnapshot.forEach((doc) => {
-            // doc.data() is never undefined for query doc snapshots
-            // console.log(doc.id, " => ", doc.data());
-            destinationList.push(doc.data())
-        });
-        setDestinations(destinationList)
-    }, [])
-
-
-    useEffect(() => {
-        readData()
-    }, [readData])
-
-    console.log("Destinations", destinations)
+    // data for table
     const data = destinations.map((u, i) => {
         return {
             key: i + 1,
@@ -109,6 +85,8 @@ export default function Destination() {
     }
     const handleCancel = () => {
         setOpen(false)
+        setSelectedDestination({});
+        setState(initialState);
     }
 
     const handleChange = (e) => {
@@ -120,7 +98,8 @@ export default function Destination() {
             [field]: value, // `value` will be an array of places
         }));
     };
-    // console.log(state)
+
+    // handle form submit
     const handleFormSubmit = () => {
         let { title, days, price, places, facilities } = state
         title = title.trim()
@@ -135,10 +114,16 @@ export default function Destination() {
             places,
             facilities
         }
-        uploadFile(document)
+        if (selectedDestination.id) {
+            // If updating, upload the image and update the existing blog
+            uploadFile(document, selectedDestination.id);
+        } else {
+            // If adding a new blog, proceed with uploading the image and creating a new blog
+            uploadFile(document);
+        }
     }
 
-    const uploadFile = async (document) => {
+    const uploadFile = async (document, destinationId) => {
         setConfirmLoading(true)
         const storageRef = ref(storage, 'images/' + file.name);
         const uploadTask = uploadBytesResumable(storageRef, file);
@@ -162,10 +147,26 @@ export default function Destination() {
             () => {
                 // Handle successful uploads on complete
                 // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
                     // console.log('File available at', downloadURL);
                     const dataDoc = { ...document, imgUrl: downloadURL }
-                    createDocument(dataDoc)
+
+                    if (destinationId) {
+                        // If it's an update, use `updateDoc`
+                        const blogRef = doc(firestore, 'Destinations', destinationId);
+                        await setDoc(blogRef, dataDoc, { merge: true }); // Merge true ensures existing data is updated
+
+                        window.toastify('Destination updated successfully', 'success');
+                        setConfirmLoading(false);
+                        setDestinations(destinations.map(dest => dest.id === destinationId ? { ...dest, ...dataDoc } : dest));
+                        setOpen(false);
+                        setState(initialState);
+                        setSelectedDestination({});
+
+                    } else {
+                        // If it's a new blog, use `createDocument`
+                        createDocument(dataDoc);
+                    }
                 });
             }
         );
@@ -175,14 +176,11 @@ export default function Destination() {
             await setDoc(doc(firestore, "Destinations", data.id), data);
             window.toastify('Document add successfully', 'success')
 
-            // Re-fetch the updated list of destinations
-            // await readData();
             setState(initialState)
             setFile(null)
             if (fileInputRef.current) { fileInputRef.current.value = '' }
             setOpen(false)
-            readData();
-
+            setDestinations([...destinations, data])
 
         } catch (e) {
             console.error("Error adding document: ", e);
@@ -192,11 +190,12 @@ export default function Destination() {
     }
     const handleUpdate = (destination) => {
         setSelectedDestination(destination)
-        setState(selectedDestination)
+        setState(destination)
         setOpen(true)
     }
 
     const handleDelete = async (id) => {
+        console.log("recordid", id)
         try {
             await deleteDoc(doc(firestore, "Destinations", id));
             // Update state by removing the deleted destination
@@ -206,7 +205,6 @@ export default function Destination() {
             console.error("Error deleting user: ", error);
             window.toastify('Failed to delete user', 'error');
         }
-
     }
     return (
         <Layout style={{ minHeight: '100vh' }}>

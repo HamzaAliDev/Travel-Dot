@@ -1,17 +1,18 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
-import { collection, deleteDoc, doc, getDocs, orderBy, query, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Layout, theme, Space, Table, Modal, Typography } from 'antd';
 import { firestore, storage } from '../../../config/firebase';
 import DashboardLayout from '../../../components/DashboardLayout';
 import moment from 'moment';
+import { useBlogContext } from '../../../context/BlogContext';
 
 const { Content } = Layout;
 
 const initialState = { title: '', shortDescription: '', detail: '' };
 export default function Blog() {
+    const { blogs, setBlogs } = useBlogContext();
     const [state, setState] = useState(initialState);
-    const [blogs, setBlogs] = useState([]);
     const [open, setOpen] = useState(false);
     const [selectedBlog, setSelectedBlog] = useState({});
     const [confirmLoading, setConfirmLoading] = useState(false);
@@ -22,22 +23,7 @@ export default function Blog() {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
 
-    const readData = useCallback(async () => {
-        // Create a query that orders data in ascending order by createdAt
-        const q = query(collection(firestore, 'blogs'), orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        let blogList = [];
-        querySnapshot.forEach((doc) => {
-            blogList.push({ id: doc.id, ...doc.data() }); // Include the document ID
-        });
-        setBlogs(blogList);
-    }, []);
-
-    useEffect(() => {
-        readData();
-    }, [readData]);
-
-// Define the columns for the table
+    // Define the columns for the table
     const columns = [
         { title: 'St#', dataIndex: 'num', key: 'num', },
         {
@@ -49,11 +35,8 @@ export default function Blog() {
             )
         },
         { title: 'Title', dataIndex: 'title', key: 'title' },
-        { title: 'Short Description', dataIndex: 'shortDescription', key: 'shortDescription' },
         {
-            title: 'Detail',
-            dataIndex: 'detail',
-            key: 'detail',
+            title: 'Short Description', dataIndex: 'shortDescription', key: 'shortDescription',
             render: (text) => (
                 <Typography.Paragraph
                     ellipsis={{
@@ -61,7 +44,20 @@ export default function Blog() {
                         expandable: 'collapsible',
                         symbol: 'Read more',
                     }}
-                    
+                >
+                    {text}
+                </Typography.Paragraph>
+            ),
+        },
+        {
+            title: 'Detail', dataIndex: 'detail', key: 'detail',
+            render: (text) => (
+                <Typography.Paragraph
+                    ellipsis={{
+                        rows: 4, // Adjust the number of visible rows
+                        expandable: 'collapsible',
+                        symbol: 'Read more',
+                    }}
                 >
                     {text}
                 </Typography.Paragraph>
@@ -69,8 +65,7 @@ export default function Blog() {
         },
         { title: 'Created At', dataIndex: 'createdAt', key: 'createdAt' },
         {
-            title: 'Action',
-            key: 'action',
+            title: 'Action', key: 'action',
             render: (_, record) => (
                 <Space size="middle">
                     <button className="btn btn-sm btn-outline-warning" onClick={() => handleUpdate(record)}>
@@ -124,13 +119,14 @@ export default function Blog() {
     // handle updateblog data
     const handleUpdate = (record) => {
         setSelectedBlog(record);
-        setState(selectedBlog);
+        setState(record);
         setOpen(true);
     };
 
     // Handle modal close
     const handleCancel = () => {
         setOpen(false);
+        setSelectedBlog({});
     };
 
     // Handle form submit
@@ -147,11 +143,20 @@ export default function Blog() {
             shortDescription,
             detail,
         }
-        uploadFile(document)
+
+        if (selectedBlog.id) {
+            // If updating, upload the image and update the existing blog
+            uploadFile(document, selectedBlog.id);
+        } else {
+            // If adding a new blog, proceed with uploading the image and creating a new blog
+            uploadFile(document);
+        }
+
+
     };
 
     // Upload file to firebase storage
-    const uploadFile = async (document) => {
+    const uploadFile = async (document, blogId) => {
         setConfirmLoading(true)
         const storageRef = ref(storage, 'blogImages/' + file.name);
         const uploadTask = uploadBytesResumable(storageRef, file);
@@ -175,10 +180,28 @@ export default function Blog() {
             () => {
                 // Handle successful uploads on complete
                 // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
                     // console.log('File available at', downloadURL);
                     const dataDoc = { ...document, imgUrl: downloadURL }
-                    createDocument(dataDoc)
+                    // createDocument(dataDoc)
+
+
+                    if (blogId) {
+                        // If it's an update, use `updateDoc`
+                        const blogRef = doc(firestore, 'blogs', blogId);
+                        await setDoc(blogRef, dataDoc, { merge: true }); // Merge true ensures existing data is updated
+
+                        window.toastify('Blog updated successfully', 'success');
+                        setConfirmLoading(false);
+                        setBlogs(blogs.map(blog => blog.id === blogId ? { ...blog, ...dataDoc } : blog));
+                        setOpen(false);
+                        setState(initialState);
+                        setSelectedBlog({});
+
+                    } else {
+                        // If it's a new blog, use `createDocument`
+                        createDocument(dataDoc);
+                    }
                 });
             }
         );
@@ -208,7 +231,6 @@ export default function Blog() {
             setConfirmLoading(false);
             if (fileInputRef.current) { fileInputRef.current.value = '' }
             setOpen(false)
-            readData();
         }
     }
 

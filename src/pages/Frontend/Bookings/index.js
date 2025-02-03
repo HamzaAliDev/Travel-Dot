@@ -29,6 +29,15 @@ const Bookings = () => {
     }
   }, [location, navigate]);
 
+
+  // Mapping of facilities to their respective icons
+  const facilityIcons = {
+    'Hotel': <FontAwesomeIcon icon={faHotel} />,
+    'Food': <FontAwesomeIcon icon={faUtensils} />,
+    'Shuttle': <FontAwesomeIcon icon={faShuttleVan} />,
+    'Wi-Fi': <WifiOutlined />,
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setState({
@@ -50,7 +59,7 @@ const Bookings = () => {
     }
     const data = {
       userId,
-      destination: destination.name,
+      destination: destination.title,
       ...state,
       status: 'pending',
       totalPrice: destination.price * state.travelers, // Calculate total price
@@ -107,7 +116,7 @@ const Bookings = () => {
                     <div className="card-body">
                       <div className='d-flex justify-content-between'>
                         <div className='d-flex align-items-center'>
-                          <h5 className="card-text fw-semibold">{destination.name}</h5>
+                          <h5 className="card-text fw-semibold">{destination.title}</h5>
                           <div className='line-card ms-4'></div>
                         </div>
                         <h5 className="card-text text-primary">.Dot</h5>
@@ -115,17 +124,18 @@ const Bookings = () => {
                       <div className='destination-description mt-3'>
                         <p className='mb-0 pb-0 fw-semibold'>Places to Visit</p>
                         <p className='text-muted'>
-                          Explore iconic landmarks such as {destination.placesToVisit.join(', ')}. Enjoy a memorable experience with our eco-friendly travel packages.
+                          Explore iconic landmarks such as {destination.places.join(', ')}. Enjoy a memorable experience with our eco-friendly travel packages.
                         </p>
                       </div>
                       <div>
                         <p className='fw-semibold'>Complete Package</p>
                         <div className='d-flex flex-column flex-wrap  my-1'>
-                          <Tag className='mb-2 px-2'><FontAwesomeIcon icon={faCalendarAlt} /> 5 Days</Tag>
-                          <Tag className='mb-2 px-2'><FontAwesomeIcon icon={faHotel} /> 5 Star Hotel Rooms</Tag>
-                          <Tag className='mb-2 px-2'><FontAwesomeIcon icon={faUtensils} /> Food</Tag>
-                          <Tag className='mb-2 px-2'><FontAwesomeIcon icon={faShuttleVan} /> Shuttle</Tag>
-                          <Tag className='mb-2 px-2'><WifiOutlined /> Wi-Fi</Tag>
+                          <Tag className='mb-2 px-2'><FontAwesomeIcon icon={faCalendarAlt} /> {destination.days} Days</Tag>
+                          {destination.facilities.map((facility, index) => (
+                            <Tag key={index} className='mb-2 px-2'>
+                              {facilityIcons[facility]} {facility}
+                            </Tag>
+                          ))}
                         </div>
                       </div>
                       <div className="d-flex align-items-center justify-content-between mt-3">

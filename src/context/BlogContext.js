@@ -25,7 +25,7 @@ export default function BlogContext({ children }) {
       }, []);
 
   return (
-    <Blog.Provider value={{ blogs }}>
+    <Blog.Provider value={{ blogs, setBlogs }}>
         {children}
     </Blog.Provider>
   )
